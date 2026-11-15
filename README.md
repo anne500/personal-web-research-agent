@@ -35,7 +35,9 @@ flowchart TD
     class A failure;
 ```
 
-## 🧩 Implemented extensions
+## 🧩 Extensions
+
+### Implemented extensions
 
 | Extension | Behavior | Verification |
 | --- | --- | --- |
@@ -45,6 +47,14 @@ flowchart TD
 | 🔁 Article deduplication and fallback | Groups locale and fragment variants of an article. When fewer than three distinct sources remain, GitHub Docs search supplements the evidence. | Live fallback and offline retrieval regression |
 | 🧾 Citation validation | In search mode, checks that each quoted passage appears in its cited excerpt, allowing whitespace differences. | Live digest and offline wrong-source, unknown-label, and invented-quote cases |
 | 🛑 Retry and abstention | Retries invalid citations once with the same evidence, then withholds claims if validation still fails. Reports insufficient evidence when the model produces no claims. | Offline retry and abstention cases, plus a live insufficient-evidence run |
+
+### Planned extensions
+
+Check off an extension when its completion criteria pass, then link the test or verification result here.
+
+- [ ] **1. Save and replay evidence.** Save source URLs and labels, exact excerpts, model claims, and citation-check outcomes alongside each digest. **Complete when** a reviewer can replay the citation checks offline from a saved run and reproduce its pass or fail outcomes without calling Tavily, GitHub Docs, or Ollama.
+- [ ] **2. Merge repeated findings.** Show a repeated finding once and preserve every supporting source and quote. **Complete when** the [retention regression](docs/live-regression.md) produces one public finding and one private/internal finding, each retaining its verified citations, and a test confirms that distinct scopes stay separate.
+- [ ] **3. Add a claim-support evaluation set.** Include examples of fully supported claims, partly supported claims, wrong repository scopes, missing evidence, and quotations that appear in the excerpt but fail to establish the claim. **Complete when** an offline evaluation records quote matching and claim support separately against documented expected results.
 
 ## 🚀 Run on Windows
 
