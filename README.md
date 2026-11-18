@@ -41,21 +41,23 @@ flowchart TD
 
 - [x] **1. Save and replay evidence.** Digests include a companion JSON file with source URLs, labels, exact excerpts, and the model responses and citation outcome for each search attempt. The [offline round-trip tests](tests/test_regressions.py) reproduce accepted citations, rejected citations, and insufficient evidence with HTTP calls disabled.
 
-| Extension | Behavior | Verification |
-| --- | --- | --- |
-| 🔗 Direct URL research | Fetches a user-selected HTML page. Uses local Ollama and requires no Tavily key. | Live answerable and missing-evidence runs |
-| 🌐 Web search | Sends a question to Tavily and selects up to three source excerpts or snippets. | Live search with local Qwen |
-| 🏷️ Product and version scope | `--github-com` keeps GitHub.com and Enterprise Cloud documentation and excludes versioned Enterprise Server pages. | Live scoped search and offline URL tests |
-| 🔁 Article deduplication and fallback | Groups locale and fragment variants of an article. When fewer than three distinct sources remain, GitHub Docs search supplements the evidence. | Live fallback and offline retrieval regression |
-| 🧾 Citation validation | In search mode, checks that each quoted passage appears in its cited excerpt, allowing whitespace differences. | Live digest and offline wrong-source, unknown-label, and invented-quote cases |
-| 🛑 Retry and abstention | Retries invalid citations once with the same evidence, then withholds claims if validation still fails. Reports insufficient evidence when the model produces no claims. | Offline retry and abstention cases, plus a live insufficient-evidence run |
-
 ### Planned extensions
 
 Move each verified extension to Implemented extensions and link its test or verification result.
 
 - [ ] **2. Merge repeated findings.** Show a repeated finding once and preserve every supporting source and quote. **Complete when** the [retention regression](docs/live-regression.md) produces one public finding and one private/internal finding, each retaining its verified citations, and a test confirms that distinct scopes stay separate.
 - [ ] **3. Add a claim-support evaluation set.** Include examples of fully supported claims, partly supported claims, wrong repository scopes, missing evidence, and quotations that appear in the excerpt but fail to establish the claim. **Complete when** an offline evaluation records quote matching and claim support separately against documented expected results.
+
+## ⚙️ Existing capabilities
+
+| Capability | Behavior | Verification |
+| --- | --- | --- |
+| 🔗 Direct URL research | Fetches a user-selected HTML page. Uses local Ollama and requires no Tavily key. | Live dependency-caching example and offline URL excerpt test |
+| 🌐 Web search | Sends a question to Tavily and selects up to three source excerpts or snippets. | Live search with local Qwen |
+| 🏷️ Product and version scope | `--github-com` keeps GitHub.com and Enterprise Cloud documentation and excludes versioned Enterprise Server pages. | Live scoped search and offline URL tests |
+| 🔁 Article deduplication and fallback | In `--github-com` mode, groups locale and fragment variants of an article. GitHub Docs search can supplement the evidence when fewer than three distinct sources remain. | Live fallback and offline retrieval regression |
+| 🧾 Citation validation | In search mode, checks that each quoted passage appears in its cited excerpt, allowing whitespace differences. | Live digest and offline wrong-source, unknown-label, and invented-quote cases |
+| 🛑 Retry and abstention | Retries invalid citations once with the same evidence, then withholds claims if validation still fails. Reports insufficient evidence when the model produces no claims. | Offline retry and abstention cases, plus a live insufficient-evidence run |
 
 ## 🚀 Run on Windows
 
