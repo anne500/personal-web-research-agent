@@ -2,6 +2,37 @@
 
 A Python research agent that retrieves web evidence, runs Qwen locally through Ollama, and writes a timestamped Markdown digest. It demonstrates how to recover when search returns three URLs for a single article and how to check the quotes behind an answer.
 
+## 📚 Tutorial baseline
+
+Darsh Shah’s tutorial takes a research question from the terminal, searches the web through Ollama, and retrieves the top five pages. It uses Requests and BeautifulSoup to extract page text, then sends the text to local Qwen through Ollama and saves a timestamped Markdown digest. This project retains that question-to-digest workflow. [freeCodeCamp tutorial](https://www.freecodecamp.org/news/build-a-personal-ai-web-research-agent-with-ollama-and-qwen/)
+
+## 🧩 Project extensions and contributions
+
+### Project adaptations
+
+- 🔗 **Direct URL research.** Added a `--url` mode for analyzing a specific source with local Qwen. This mode requires no Tavily key. The dependency-caching question and the offline URL excerpt test exercised this path.
+- 🌐 **Tavily search.** Replaced the tutorial’s Ollama web search with Tavily. The agent selects up to three page excerpts or search snippets and can restrict results by domain. The live retention regression exercised this path.
+
+### Implemented extensions
+
+- [x] **1. Save and replay evidence.** Digests include a companion JSON file with source URLs, labels, exact excerpts, and the model responses and citation outcome for each search attempt. The [offline round-trip tests](tests/test_regressions.py) reproduce accepted citations, rejected citations, and insufficient evidence with HTTP calls disabled.
+
+| Contribution | Behavior | Verification |
+| --- | --- | --- |
+| 🏷️ Product and version scope | `--github-com` keeps GitHub.com and Enterprise Cloud documentation and excludes versioned Enterprise Server pages. | Live scoped search and offline URL tests |
+| 🔁 Article deduplication and fallback | In `--github-com` mode, groups locale and fragment variants of an article. GitHub Docs search can supplement the evidence when fewer than three distinct sources remain. | Live fallback and offline retrieval regression |
+| 🧾 Citation validation | In search mode, checks that each quoted passage appears in its cited excerpt, allowing whitespace differences. | Live digest and offline wrong-source, unknown-label, and invented-quote cases |
+| 🛑 Retry and abstention | Retries invalid citations once with the same evidence, then withholds claims if validation still fails. Reports insufficient evidence when the model produces no claims. | Offline retry and abstention cases, plus a live insufficient-evidence run |
+
+The live retention regression shows what the added retrieval and citation controls changed for one GitHub.com policy question. The BRI evaluation guide explains how to assess source applicability, quote matching, and claim support as separate checks. [Live regression](docs/live-regression.md) · [BRI evaluation guide](docs/bri-evaluation.md)
+
+### Planned extensions
+
+Move each verified extension to Implemented extensions and link its test or verification result.
+
+- [ ] **2. Merge repeated findings.** Show a repeated finding once and preserve every supporting source and quote. **Complete when** the [retention regression](docs/live-regression.md) produces one public finding and one private/internal finding, each retaining its verified citations, and a test confirms that distinct scopes stay separate.
+- [ ] **3. Add a claim-support evaluation set.** Include examples of fully supported claims, partly supported claims, wrong repository scopes, missing evidence, and quotations that appear in the excerpt but fail to establish the claim. **Complete when** an offline evaluation records quote matching and claim support separately against documented expected results.
+
 ## 🎨 Architecture
 
 ```mermaid
@@ -34,30 +65,6 @@ flowchart TD
     class D output;
     class A failure;
 ```
-
-## 🧩 Extensions
-
-### Implemented extensions
-
-- [x] **1. Save and replay evidence.** Digests include a companion JSON file with source URLs, labels, exact excerpts, and the model responses and citation outcome for each search attempt. The [offline round-trip tests](tests/test_regressions.py) reproduce accepted citations, rejected citations, and insufficient evidence with HTTP calls disabled.
-
-### Planned extensions
-
-Move each verified extension to Implemented extensions and link its test or verification result.
-
-- [ ] **2. Merge repeated findings.** Show a repeated finding once and preserve every supporting source and quote. **Complete when** the [retention regression](docs/live-regression.md) produces one public finding and one private/internal finding, each retaining its verified citations, and a test confirms that distinct scopes stay separate.
-- [ ] **3. Add a claim-support evaluation set.** Include examples of fully supported claims, partly supported claims, wrong repository scopes, missing evidence, and quotations that appear in the excerpt but fail to establish the claim. **Complete when** an offline evaluation records quote matching and claim support separately against documented expected results.
-
-## ⚙️ Existing capabilities
-
-| Capability | Behavior | Verification |
-| --- | --- | --- |
-| 🔗 Direct URL research | Fetches a user-selected HTML page. Uses local Ollama and requires no Tavily key. | Live dependency-caching example and offline URL excerpt test |
-| 🌐 Web search | Sends a question to Tavily and selects up to three source excerpts or snippets. | Live search with local Qwen |
-| 🏷️ Product and version scope | `--github-com` keeps GitHub.com and Enterprise Cloud documentation and excludes versioned Enterprise Server pages. | Live scoped search and offline URL tests |
-| 🔁 Article deduplication and fallback | In `--github-com` mode, groups locale and fragment variants of an article. GitHub Docs search can supplement the evidence when fewer than three distinct sources remain. | Live fallback and offline retrieval regression |
-| 🧾 Citation validation | In search mode, checks that each quoted passage appears in its cited excerpt, allowing whitespace differences. | Live digest and offline wrong-source, unknown-label, and invented-quote cases |
-| 🛑 Retry and abstention | Retries invalid citations once with the same evidence, then withholds claims if validation still fails. Reports insufficient evidence when the model produces no claims. | Offline retry and abstention cases, plus a live insufficient-evidence run |
 
 ## 🚀 Run on Windows
 
@@ -124,4 +131,4 @@ See the [recorded live regression](docs/live-regression.md) and [BRI evaluation 
 
 ## 🙌 Acknowledgment
 
-Inspired by Darsh Shah’s freeCodeCamp tutorial [How to Build a Personal Web Research AI Agent with Ollama and Qwen](https://www.freecodecamp.org/news/build-a-personal-ai-web-research-agent-with-ollama-and-qwen/). This project uses Tavily for web discovery and adds product-scoped retrieval, article deduplication, an official [GitHub Docs API](https://docs.github.com/en/get-started/using-github-docs/github-docs-api) fallback, and quote validation.
+Thanks to Darsh Shah for the freeCodeCamp tutorial that provided the starting workflow.
