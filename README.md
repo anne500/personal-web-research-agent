@@ -10,7 +10,7 @@ A Python research agent that retrieves web evidence, runs Qwen locally through O
 
 ## 🧭 Explore the project
 
-[🧩 Architecture](#architecture) · [🔁 Extension roadmap](#extension-roadmap) · [🚀 Setup](#setup) · [🧪 Results & verification](#verification) · [📊 Claim-support results](#claim-support-results) · [🗂️ Evidence & guides](docs/bri-evaluation.md) · [📚 Tutorial credit](#tutorial-credit) · [🎨 Visual standard](https://github.com/anne500/multi-agent-study-guide/blob/main/VISUAL_STYLE.md#readme-presentation-standard)
+[🟦 Base tutorial](#base-tutorial) · [🧩 Contributions](#contributions) · [🗺️ Roadmap](#extension-roadmap) · [🏗️ Architecture](#architecture) · [🚀 Setup](#setup) · [🧪 Results & verification](#verification) · [🗂️ Evidence & guides](#claim-support-results) · [🟪 Thesis connection](#thesis-connection) · [🎨 Visual standard](https://github.com/anne500/multi-agent-study-guide/blob/main/VISUAL_STYLE.md)
 
 ![Python 3.10 or later](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Ollama local inference](https://img.shields.io/badge/Ollama-Local%20inference-334155)
@@ -28,7 +28,11 @@ Darsh Shah’s tutorial takes a research question from the terminal, searches th
 
 <a id="-project-extensions-and-contributions"></a>
 
-## 🧩 Extensions added in Project 8
+<a id="-extensions-added-in-project-8"></a>
+
+<a id="contributions"></a>
+
+## 🧩 Tutorial baseline and contributions
 
 <a id="extension-roadmap"></a>
 
@@ -49,15 +53,15 @@ The numbered checklist covers the three follow-up extensions. The contribution t
 | Origin | Item | Scope or contribution | Verification |
 | --- | --- | --- | --- |
 | 🟦 Tutorial baseline | [Base tutorial](#base-tutorial) | Ollama web search, webpage text extraction, local Qwen summarization, and a timestamped Markdown digest. | See the [tutorial baseline](#base-tutorial). |
-| 🛠️ Adaptation | 🔗 Direct URL research (adaptation) | Added `--url` to analyze a supplied page with local Qwen without a Tavily key. | Live dependency-caching question and offline URL excerpt test |
-| 🛠️ Adaptation | 🌐 Tavily web search (adaptation) | Replaced Ollama web search with Tavily, with optional domain filtering and up to three excerpts or snippets. | Live retention regression |
-| 🧩 Extension | 🏷️ Product and version scope | `--github-com` keeps GitHub.com and Enterprise Cloud documentation and excludes versioned Enterprise Server pages. | Live scoped search and offline URL tests |
-| 🧩 Extension | 🔁 Article deduplication and fallback | In `--github-com` mode, groups locale and fragment variants of an article. GitHub Docs search can supplement the evidence when fewer than three distinct sources remain. | Live fallback and offline retrieval regression |
-| 🧩 Extension | 🧾 Citation validation | In search mode, checks that each quoted passage appears in its cited excerpt, allowing whitespace differences. | Live digest and offline wrong-source, unknown-label, and invented-quote cases |
-| 🧩 Extension | 🛑 Retry and abstention | Retries invalid citations once with the same evidence, then withholds claims if validation still fails. Reports insufficient evidence when the model produces no claims. | Offline retry and abstention cases, plus a live insufficient-evidence run |
-| 🧩 Extension | 💾 Save and replay evidence | Saves source URLs, labels, exact excerpts, model responses, and citation outcomes. Replays each search attempt against the stored evidence. | [Offline tests](tests/test_regressions.py) cover accepted and rejected citations and insufficient evidence with HTTP calls disabled. |
-| 🧩 Extension | 🔗 Merge repeated findings | Groups matching claim wording after limited formatting normalization and keeps all distinct source and quote pairs. | Two findings and four citations in the [offline retention regression](docs/live-regression.md#offline-merge-regression) |
-| 🧩 Extension | 🧪 Claim-support evaluation set | Reports automated quote checks alongside curated factual-support judgments. | [Six offline cases](docs/bri-evaluation.md#claim-support-evaluation) |
+| 🛠️ Adaptation | 🔗 Direct URL research | Added `--url` to analyze a supplied page with local Qwen without a Tavily key. | Live dependency-caching question and offline URL excerpt test |
+| 🛠️ Adaptation | 🌐 Tavily web search | Replaced Ollama web search with Tavily, with optional domain filtering and up to three excerpts or snippets. | Live retention regression |
+| 🧩 Implemented extension | 🏷️ Product and version scope | `--github-com` keeps GitHub.com and Enterprise Cloud documentation and excludes versioned Enterprise Server pages. | Live scoped search and offline URL tests |
+| 🧩 Implemented extension | 🔁 Article deduplication and fallback | In `--github-com` mode, groups locale and fragment variants of an article. GitHub Docs search can supplement the evidence when fewer than three distinct sources remain. | Live fallback and offline retrieval regression |
+| 🧩 Implemented extension | 🧾 Citation validation | In search mode, checks that each quoted passage appears in its cited excerpt, allowing whitespace differences. | Live digest and offline wrong-source, unknown-label, and invented-quote cases |
+| 🧩 Implemented extension | 🛑 Retry and abstention | Retries invalid citations once with the same evidence, then withholds claims if validation still fails. Reports insufficient evidence when the model produces no claims. | Offline retry and abstention cases, plus a live insufficient-evidence run |
+| 🧩 Implemented extension | 💾 Save and replay evidence | Saves source URLs, labels, exact excerpts, model responses, and citation outcomes. Replays each search attempt against the stored evidence. | [Offline tests](tests/test_regressions.py) cover accepted and rejected citations and insufficient evidence with HTTP calls disabled. |
+| 🧩 Implemented extension | 🔗 Merge repeated findings | Groups matching claim wording after limited formatting normalization and keeps all distinct source and quote pairs. | Two findings and four citations in the [offline retention regression](docs/live-regression.md#offline-merge-regression) |
+| 🧩 Implemented extension | 🧪 Claim-support evaluation set | Reports automated quote checks alongside curated factual-support judgments. | [Six offline cases](docs/bri-evaluation.md#claim-support-evaluation) |
 
 The live retention regression shows what the added retrieval and citation controls changed for one GitHub.com policy question. The BRI evaluation guide explains how to assess source applicability, quote matching, and claim support as separate checks. [Live regression](docs/live-regression.md) · [BRI evaluation guide](docs/bri-evaluation.md)
 
@@ -173,8 +177,16 @@ See the [recorded live regression](docs/live-regression.md) and [BRI evaluation 
 
 The chart covers the four matching-quote cases from the six controlled fixtures. The support labels come from curated review judgments. [Windows verification](docs/bri-evaluation.md#windows-verification) · [Source cases](evaluation/claim_support_cases.json) · [Plotting script](scripts/plot_verification.py)
 
+<a id="thesis-connection"></a>
+
+## 🟪 Thesis connection
+
+For Build Release and Integration Engineering, exact evidence replay can make a CI or release-policy digest easier to audit. The six curated cases demonstrate the distinction between quote matching and factual support. A follow-up study would apply those checks to actual build and release records with independent human ratings.
+
 <a id="tutorial-credit"></a>
 
-## 🙌 Acknowledgment
+<a id="-acknowledgment"></a>
+
+## 📚 Tutorial Acknowledgment and Attribution
 
 Thanks to Darsh Shah for the freeCodeCamp tutorial that provided the starting workflow.
