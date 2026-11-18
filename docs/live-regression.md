@@ -34,4 +34,17 @@ The agent grouped the three URLs, retrieved two Enterprise Cloud articles throug
 | Public repositories | 1–90 days | [S2, retention policy](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-github-actions-in-your-enterprise#check-workflow-run-status-artifact-and-log-retention) |
 | Private and internal repositories | 1–400 days | [S2, retention policy](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-github-actions-in-your-enterprise#check-workflow-run-status-artifact-and-log-retention) |
 
-The live digest repeated both claims for [S3, repository settings](https://docs.github.com/en/enterprise-cloud@latest/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository). This presentation issue is open. The [offline tests](../tests/test_regressions.py) use simulated service responses and can be rerun independently of the live example.
+The live digest repeated both claims for [S3, repository settings](https://docs.github.com/en/enterprise-cloud@latest/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository).
+
+<a id="offline-merge-regression"></a>
+
+## 🔗 Offline merge regression
+
+The regression recreates the two retention ranges with controlled excerpts and four validated citations. It exercises the search digest renderer with one modeled response.
+
+| Scope | Before grouping | After grouping | Citations retained |
+| --- | ---: | ---: | --- |
+| Public repositories | 2 findings | 1 finding | S2 and S3, with one quote each |
+| Private and internal repositories | 2 findings | 1 finding | S2 and S3, with one quote each |
+
+The renderer matches repeated wording and normalizes numeric range typography and a final period. Scope, values, units, and qualifiers stay in the comparison. The model prompt asks for the same claim wording across sources to support grouping. Paraphrases with different wording can still display separately. The saved evidence retains the original model reply. [Regression tests](../tests/test_regressions.py)

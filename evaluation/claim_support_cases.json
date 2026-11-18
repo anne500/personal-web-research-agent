@@ -1,0 +1,44 @@
+[
+  {
+    "id": "full-support",
+    "excerpts": {"[S1]": "Public repositories can retain workflow artifacts for 1 to 90 days."},
+    "claims": [{"claim": "Public repositories can retain workflow artifacts for 1 to 90 days.", "source": "[S1]", "quote": "Public repositories can retain workflow artifacts for 1 to 90 days."}],
+    "expected_quote_status": "passed",
+    "review": {"support": "full", "reason": "The quote establishes the repository scope and both endpoints."}
+  },
+  {
+    "id": "partial-support",
+    "excerpts": {"[S1]": "The default artifact retention period is 90 days."},
+    "claims": [{"claim": "The default is 90 days and repositories can configure up to 400 days.", "source": "[S1]", "quote": "The default artifact retention period is 90 days."}],
+    "expected_quote_status": "passed",
+    "review": {"support": "partial", "reason": "The quote gives the default and leaves the configurable maximum unestablished."}
+  },
+  {
+    "id": "wrong-scope",
+    "excerpts": {"[S1]": "Private and internal repositories can retain workflow artifacts for up to 400 days."},
+    "claims": [{"claim": "Public repositories can retain workflow artifacts for up to 400 days.", "source": "[S1]", "quote": "Private and internal repositories can retain workflow artifacts for up to 400 days."}],
+    "expected_quote_status": "passed",
+    "review": {"support": "unsupported", "reason": "The quoted limit applies to private and internal repositories."}
+  },
+  {
+    "id": "irrelevant-matching-quote",
+    "excerpts": {"[S1]": "Workflow logs can be downloaded from the run summary."},
+    "claims": [{"claim": "Workflow artifacts are retained for 30 days by default.", "source": "[S1]", "quote": "Workflow logs can be downloaded from the run summary."}],
+    "expected_quote_status": "passed",
+    "review": {"support": "unsupported", "reason": "The quote concerns downloads and provides no retention duration."}
+  },
+  {
+    "id": "missing-evidence",
+    "excerpts": {"[S1]": "The run summary shows the workflow conclusion."},
+    "claims": [],
+    "expected_quote_status": "insufficient_evidence",
+    "review": {"support": "insufficient", "reason": "The supplied excerpt gives no retention policy and the answer abstains."}
+  },
+  {
+    "id": "invented-quote",
+    "excerpts": {"[S1]": "The default artifact retention period is 90 days."},
+    "claims": [{"claim": "The default artifact retention period is 365 days.", "source": "[S1]", "quote": "The default artifact retention period is 365 days."}],
+    "expected_quote_status": "rejected",
+    "review": {"support": "unsupported", "reason": "The cited excerpt gives 90 days and contains no such quote."}
+  }
+]

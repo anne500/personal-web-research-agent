@@ -9,6 +9,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 import research_agent as agent
+from evaluate_claim_support import DEFAULT_CASES, evaluate_cases
 
 
 DOCS = "https://docs.github.com"
@@ -132,6 +133,46 @@ class CitationRegressionTests(unittest.TestCase):
         model.assert_called_once()
         self.assertIn("did not provide enough evidence", digest)
 
+    def test_retention_findings_merge_with_all_source_quotes(self):
+        excerpts = {
+            "[S2]": f"{PUBLIC}\n{PRIVATE}",
+            "[S3]": "For public repositories, choose from 1 to 90 days. "
+                    "For private and internal repositories, choose from 1 to 400 days.",
+        }
+        response = json.dumps({"claims": [
+            {"claim": PUBLIC, "source": "[S2]", "quote": PUBLIC},
+            {"claim": PRIVATE, "source": "[S2]", "quote": PRIVATE},
+            {"claim": PUBLIC.replace("1 to 90", "1–90").removesuffix("."), "source": "[S3]",
+             "quote": "For public repositories, choose from 1 to 90 days."},
+            {"claim": PRIVATE, "source": "[S3]",
+             "quote": "For private and internal repositories, choose from 1 to 400 days."},
+        ]})
+        attempts = []
+        with patch.object(agent, "query_ollama", return_value=response) as model:
+            digest = agent.generate_search_digest(QUESTION, "saved excerpts", excerpts, citation_attempts=attempts)
+
+        findings = [line for line in digest.splitlines() if line.startswith("- ")]
+        self.assertEqual(findings, [f"- {PUBLIC} [S2] [S3]", f"- {PRIVATE} [S2] [S3]"])
+        self.assertEqual(digest.count("  - Evidence [S"), 4)
+        for claim in json.loads(response)["claims"]:
+            self.assertIn(f"Evidence {claim['source']}: “{claim['quote']}”", digest)
+        self.assertEqual(attempts, [{"response": response, "status": "passed"}])
+        model.assert_called_once()
+
+    def test_merge_preserves_distinct_scope_values_units_and_qualifiers(self):
+        claims = [
+            "Public repositories retain artifacts for up to 90 days.",
+            "Private repositories retain artifacts for up to 90 days.",
+            "Public repositories retain artifacts for up to 30 days.",
+            "Public repositories retain artifacts for 90 days.",
+            "Public repositories retain artifacts for up to 90 hours.",
+        ]
+        digest = agent.render_search_digest(
+            [(claim, "[S1]", claim) for claim in claims] + [(claims[0], "[S1]", claims[0])]
+        )
+        self.assertEqual(sum(line.startswith("- ") for line in digest.splitlines()), len(claims))
+        self.assertEqual(digest.count("Evidence:"), len(claims))
+
 
 class EvidenceReplayTests(unittest.TestCase):
     def setUp(self):
@@ -212,3 +253,26 @@ class EvidenceReplayTests(unittest.TestCase):
         status, output = self.run_cli("--replay", str(path))
         self.assertEqual(status, 0, output)
         self.assertIn("Citation replay is available for search runs", output)
+
+
+class ClaimSupportEvaluationTests(unittest.TestCase):
+    def test_quote_matching_and_curated_support_are_reported_independently(self):
+        cases = json.loads(DEFAULT_CASES.read_text(encoding="utf-8"))
+        with (
+            patch.object(agent.requests, "post", side_effect=AssertionError("Unexpected HTTP POST")),
+            patch.object(agent.requests, "get", side_effect=AssertionError("Unexpected HTTP GET")),
+        ):
+            results = evaluate_cases(cases)
+
+        self.assertTrue(all(row["quote_status"] == row["expected_quote_status"] for row in results))
+        self.assertEqual(
+            {row["case"]: (row["quote_status"], row["reviewed_support"]) for row in results},
+            {
+                "full-support": ("passed", "full"),
+                "partial-support": ("passed", "partial"),
+                "wrong-scope": ("passed", "unsupported"),
+                "irrelevant-matching-quote": ("passed", "unsupported"),
+                "missing-evidence": ("insufficient_evidence", "insufficient"),
+                "invented-quote": ("rejected", "unsupported"),
+            },
+        )

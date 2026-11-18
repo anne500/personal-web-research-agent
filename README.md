@@ -17,6 +17,8 @@ Darsh Shah’s tutorial takes a research question from the terminal, searches th
 ### Implemented extensions
 
 - [x] **1. Save and replay evidence.** [Offline round-trip tests](tests/test_regressions.py)
+- [x] **2. Merge repeated findings.** [Offline retention regression](docs/live-regression.md#offline-merge-regression)
+- [x] **3. Add a claim-support evaluation set.** [Six offline evaluation cases](docs/bri-evaluation.md#claim-support-evaluation)
 
 ### Baseline and contribution table
 
@@ -30,17 +32,10 @@ Darsh Shah’s tutorial takes a research question from the terminal, searches th
 | 🧩 Extension | 🧾 Citation validation | In search mode, checks that each quoted passage appears in its cited excerpt, allowing whitespace differences. | Live digest and offline wrong-source, unknown-label, and invented-quote cases |
 | 🧩 Extension | 🛑 Retry and abstention | Retries invalid citations once with the same evidence, then withholds claims if validation still fails. Reports insufficient evidence when the model produces no claims. | Offline retry and abstention cases, plus a live insufficient-evidence run |
 | 🧩 Extension | 💾 Save and replay evidence | Saves source URLs, labels, exact excerpts, model responses, and citation outcomes. Replays each search attempt against the stored evidence. | [Offline tests](tests/test_regressions.py) cover accepted and rejected citations and insufficient evidence with HTTP calls disabled. |
-| 🟠 Planned extension | **2. Merge repeated findings** | Merge duplicate claims while preserving all supporting quotes and source labels. | [Completion criteria](#planned-extensions) |
-| 🟠 Planned extension | **3. Claim-support evaluation set** | Score factual support independently of quote matching. | [Completion criteria](#planned-extensions) |
+| 🧩 Extension | 🔗 Merge repeated findings | Groups matching claim wording after limited formatting normalization and keeps all distinct source and quote pairs. | Two findings and four citations in the [offline retention regression](docs/live-regression.md#offline-merge-regression) |
+| 🧩 Extension | 🧪 Claim-support evaluation set | Reports automated quote checks alongside curated factual-support judgments. | [Six offline cases](docs/bri-evaluation.md#claim-support-evaluation) |
 
 The live retention regression shows what the added retrieval and citation controls changed for one GitHub.com policy question. The BRI evaluation guide explains how to assess source applicability, quote matching, and claim support as separate checks. [Live regression](docs/live-regression.md) · [BRI evaluation guide](docs/bri-evaluation.md)
-
-### Planned extensions
-
-Move each verified extension to Implemented extensions and link its test or verification result.
-
-- [ ] **2. Merge repeated findings.** Show a repeated finding once and preserve every supporting source and quote. **Complete when** the [retention regression](docs/live-regression.md) produces one public finding and one private/internal finding, each retaining its verified citations, and a test confirms that distinct scopes stay separate.
-- [ ] **3. Add a claim-support evaluation set.** Include examples of fully supported claims, partly supported claims, wrong repository scopes, missing evidence, and quotations that appear in the excerpt but fail to establish the claim. **Complete when** an offline evaluation records quote matching and claim support separately against documented expected results.
 
 <a id="explore-the-project"></a>
 
@@ -65,7 +60,8 @@ flowchart TD
     U --> E
     E --> O["Local Qwen via Ollama"]
     O -->|"Search mode"| V{"Quote and label match"}
-    V -->|"Pass"| D["Markdown digest"]
+    V -->|"Pass"| C["Merge repeated findings"]
+    C --> D["Markdown digest"]
     V -->|"First failure"| O
     V -->|"Second failure"| A["Digest with validation failure"]
     O -->|"URL mode"| D
@@ -78,7 +74,7 @@ flowchart TD
     class Q,M input;
     class T,U,F,G,E retrieval;
     class O model;
-    class V check;
+    class V,C check;
     class D output;
     class A failure;
 ```
@@ -142,6 +138,7 @@ After installing the Python dependencies, run the tests without credentials, net
 
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe .\evaluate_claim_support.py
 ```
 
 | Live case | Before the fallback | With the fallback |

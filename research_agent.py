@@ -269,6 +269,27 @@ def check_citations(response, excerpts):
     return {"status": "passed" if claims else "insufficient_evidence"}, claims
 
 
+def render_search_digest(claims):
+    findings = {}
+    for claim, label, quote in claims:
+        # Match explicit numeric ranges and superficial differences, while
+        # preserving case, qualifiers, units, and scope.
+        key = re.sub(r"(?<![\w.])(\d+)\s*–\s*(\d+)(?![\w.])", r"\1 to \2", claim.removesuffix("."))
+        _, citations = findings.setdefault(key, (claim, {}))
+        citations[(label, quote)] = None
+
+    lines = ["**Citation check:** Each quote appears in its cited excerpt.", ""]
+    for claim, citations in findings.values():
+        claim = re.sub(r"([\\`*_\[\]<>])", r"\\\1", claim)
+        labels = " ".join(dict.fromkeys(label for label, _ in citations))
+        lines.append(f"- {claim} {labels}")
+        for label, quote in citations:
+            quote = re.sub(r"([\\`*_\[\]<>])", r"\\\1", quote)
+            evidence_label = f" {label}" if len(citations) > 1 else ""
+            lines.append(f"  - Evidence{evidence_label}: “{quote}”")
+    return "\n".join(lines)
+
+
 def generate_search_digest(question, evidence, excerpts, *, citation_attempts=None):
     response_format = {
         "type": "object",
@@ -297,6 +318,8 @@ def generate_search_digest(question, evidence, excerpts, *, citation_attempts=No
         "in plain text with a source label such as [S1] and one continuous, verbatim quote from "
         "that source that supports the entire statement. Copy the quote without ellipses or "
         "added quotation marks. Split statements that need different evidence. "
+        "If independent sources support the same claim, reuse the same claim wording for each "
+        "source and include each source's own quote. Keep different conditions and scopes separate. "
         "Keep the answer focused on the question. Return an empty claims list if the evidence "
         "does not support an answer."
     )
@@ -314,12 +337,7 @@ def generate_search_digest(question, evidence, excerpts, *, citation_attempts=No
             return f"Could not verify the answer's citations after one retry. {error}"
         if not claims:
             return "The retrieved excerpts did not provide enough evidence to answer the question."
-        lines = ["**Citation check:** Each quote appears in its cited excerpt.", ""]
-        for claim, label, quote in claims:
-            claim = re.sub(r"([\\`*_\[\]<>])", r"\\\1", claim)
-            quote = re.sub(r"([\\`*_\[\]<>])", r"\\\1", quote)
-            lines.append(f'- {claim} {label}\n  - Evidence: “{quote}”')
-        return "\n".join(lines)
+        return render_search_digest(claims)
 
 
 def prepare_evidence(args):
