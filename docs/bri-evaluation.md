@@ -53,3 +53,7 @@ Anne ran both offline commands from a fresh GitHub checkout in Windows PowerShel
 | 🧾 `python evaluate_claim_support.py` | All 6 quote-check outcomes matched expectations. Of the 4 cases whose quotes matched, 1 supported the full claim, 1 supported part of the claim, and 2 failed to support the claim. |
 
 The support statuses are curated for these fixtures. The runtime records one Windows test run. [Implementation commit](https://github.com/anne500/personal-web-research-agent/commit/1c4d99d8bd3f6c6362ca5c9a78b3db39e1fb73ec)
+
+### 📊 Reproduce the figure
+
+With Matplotlib and the project dependencies installed, run `python -m scripts.plot_verification` from the repository root. The script runs the offline quote checks, then counts the curated support labels among cases with a matching quote. [Source cases](../evaluation/claim_support_cases.json) · [Standalone SVG](assets/claim-support-results.svg)

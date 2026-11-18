@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="343" viewBox="0 0 1080 343" role="img" aria-labelledby="title description">
+  <title id="title">Personal Web Research Agent reading map</title>
+  <desc id="description">Learn how scoped search feeds local Qwen. Explore the verified Windows checkout and offline evidence replay. For PhD research, compare quote matching and reviewed claim support.</desc>
+  <rect width="1080" height="343" rx="22" fill="#F8FAFC"/>
+  <path d="M22 0H1058Q1080 0 1080 22V126H0V22Q0 0 22 0" fill="#0F172A"/>
+  <g font-family="DejaVu Sans, Arial, sans-serif">
+    <text x="34" y="34" fill="#93C5FD" font-size="14" font-weight="700" letter-spacing="2">LOCAL AI LEARNING / PROJECT 8</text>
+    <text x="34" y="77" fill="#FFFFFF" font-size="36" font-weight="700">Personal Web Research Agent</text>
+    <text x="34" y="105" fill="#CBD5E1" font-size="19">Search the web, summarize with local Qwen, and inspect the source evidence</text>
+    <g transform="translate(34 148)">
+      <rect width="324" height="163" rx="14" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+      <text x="20" y="31" fill="#1D4ED8" font-size="15" font-weight="700" letter-spacing="1">01 / LEARN AI</text>
+      <text x="20" y="70" fill="#172554" font-size="22" font-weight="700">Retrieve and answer</text>
+      <text x="20" y="107" fill="#172554" font-size="18">Scoped search and fallback</text>
+      <text x="20" y="137" fill="#172554" font-size="18">Local Ollama inference</text>
+    </g>
+    <g transform="translate(378 148)">
+      <rect width="324" height="163" rx="14" fill="#DCFCE7" stroke="#15803D" stroke-width="2"/>
+      <text x="20" y="31" fill="#166534" font-size="15" font-weight="700" letter-spacing="1">02 / PORTFOLIO EVIDENCE</text>
+      <text x="20" y="70" fill="#14532D" font-size="22" font-weight="700">Save and replay</text>
+      <text x="20" y="107" fill="#14532D" font-size="18">Markdown digest and JSON</text>
+      <text x="20" y="137" fill="#14532D" font-size="18">Verified Windows run</text>
+    </g>
+    <g transform="translate(722 148)">
+      <rect width="324" height="163" rx="14" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+      <text x="20" y="31" fill="#6D28D9" font-size="15" font-weight="700" letter-spacing="1">03 / PHD RESEARCH</text>
+      <text x="20" y="70" fill="#3B0764" font-size="22" font-weight="700">Review claim support</text>
+      <text x="20" y="107" fill="#3B0764" font-size="18">Automated quote matching</text>
+      <text x="20" y="137" fill="#3B0764" font-size="18">Curated support judgments</text>
+    </g>
+  </g>
+</svg>

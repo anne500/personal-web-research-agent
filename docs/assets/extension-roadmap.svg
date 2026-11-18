@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="405" viewBox="0 0 1080 405" role="img" aria-labelledby="title description">
+  <title id="title">Project 8 verified extension roadmap</title>
+  <desc id="description">Seven implemented extensions. Scope search by product and version, deduplicate articles and fall back to GitHub Docs, match quotes to sources, retry or abstain, save and replay evidence, merge repeated findings, and evaluate claim support.</desc>
+  <rect width="1080" height="405" rx="20" fill="#F8FAFC"/>
+  <g font-family="DejaVu Sans, Arial, sans-serif">
+    <text x="34" y="48" fill="#0F172A" font-size="29" font-weight="700">Seven implemented extensions</text>
+    <text x="34" y="78" fill="#475569" font-size="16" font-weight="700">SEARCH, CITATIONS, AND RECOVERY</text>
+    <g transform="translate(34 95)">
+      <rect width="239" height="107" rx="13" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+      <text x="14" y="39" fill="#172554" font-size="18" font-weight="700">Scope search</text>
+      <text x="14" y="72" fill="#172554" font-size="16">Filter product and version</text>
+    </g>
+    <g transform="translate(291 95)">
+      <rect width="239" height="107" rx="13" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+      <text x="14" y="39" fill="#172554" font-size="18" font-weight="700">Deduplicate results</text>
+      <text x="14" y="72" fill="#172554" font-size="16">Fall back to GitHub Docs</text>
+    </g>
+    <g transform="translate(548 95)">
+      <rect width="239" height="107" rx="13" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+      <text x="14" y="39" fill="#451A03" font-size="18" font-weight="700">Validate citations</text>
+      <text x="14" y="72" fill="#451A03" font-size="16">Match quotes to sources</text>
+    </g>
+    <g transform="translate(805 95)">
+      <rect width="241" height="107" rx="13" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+      <text x="14" y="39" fill="#451A03" font-size="18" font-weight="700">Retry or abstain</text>
+      <text x="14" y="72" fill="#451A03" font-size="16">Handle missing evidence</text>
+    </g>
+    <text x="34" y="230" fill="#475569" font-size="16" font-weight="700">NUMBERED FOLLOW-UP EXTENSIONS</text>
+    <g transform="translate(34 246)">
+      <rect width="324" height="137" rx="14" fill="#CCFBF1" stroke="#0F766E" stroke-width="2"/>
+      <text x="20" y="29" fill="#0F766E" font-size="14" font-weight="700" letter-spacing="1">01 / VERIFIED</text>
+      <text x="20" y="65" fill="#134E4A" font-size="20" font-weight="700">Save and replay</text>
+      <text x="20" y="100" fill="#134E4A" font-size="17">Save citations and excerpts</text>
+      <text x="20" y="123" fill="#134E4A" font-size="17">Replay checks offline</text>
+    </g>
+    <g transform="translate(378 246)">
+      <rect width="324" height="137" rx="14" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+      <text x="20" y="29" fill="#1D4ED8" font-size="14" font-weight="700" letter-spacing="1">02 / VERIFIED</text>
+      <text x="20" y="65" fill="#172554" font-size="20" font-weight="700">Merge repeated findings</text>
+      <text x="20" y="100" fill="#172554" font-size="17">Group matching claim text</text>
+      <text x="20" y="123" fill="#172554" font-size="17">Keep each source and quote</text>
+    </g>
+    <g transform="translate(722 246)">
+      <rect width="324" height="137" rx="14" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+      <text x="20" y="29" fill="#6D28D9" font-size="14" font-weight="700" letter-spacing="1">03 / VERIFIED</text>
+      <text x="20" y="65" fill="#3B0764" font-size="20" font-weight="700">Evaluate claim support</text>
+      <text x="20" y="100" fill="#3B0764" font-size="17">Run quote checks on fixtures</text>
+      <text x="20" y="123" fill="#3B0764" font-size="17">Report curated judgments</text>
+    </g>
+  </g>
+</svg>

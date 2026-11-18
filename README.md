@@ -1,6 +1,22 @@
 # 🔎 Personal Web Research Agent
 
+![Project 8 reading map for local AI learning, portfolio evidence, and PhD research](assets/readme-overview.svg)
+
+**🟦 Learn AI · 🟩 Portfolio evidence · 🟪 PhD research**
+
 A Python research agent that retrieves web evidence, runs Qwen locally through Ollama, and writes a timestamped Markdown digest. It demonstrates how to recover when search returns three URLs for a single article and how to check the quotes behind an answer.
+
+<a id="explore-the-project"></a>
+
+## 🧭 Explore the project
+
+[🧩 Architecture](#architecture) · [🔁 Extension roadmap](#extension-roadmap) · [🚀 Setup](#setup) · [🧪 Results & verification](#verification) · [📊 Claim-support results](#claim-support-results) · [🗂️ Evidence & guides](docs/bri-evaluation.md) · [📚 Tutorial credit](#tutorial-credit) · [🎨 Visual standard](https://github.com/anne500/multi-agent-study-guide/blob/main/VISUAL_STYLE.md#readme-presentation-standard)
+
+![Python 3.10 or later](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
+![Ollama local inference](https://img.shields.io/badge/Ollama-Local%20inference-334155)
+![Qwen 3.5 4B](https://img.shields.io/badge/Qwen-3.5%3A4b-7C3AED)
+![Tavily web search](https://img.shields.io/badge/Tavily-Web%20search-2563EB)
+[![Windows verification](https://img.shields.io/badge/Windows%20verification-11%20tests%20passed-15803D)](docs/bri-evaluation.md#windows-verification)
 
 <a id="-tutorial-baseline"></a>
 
@@ -14,7 +30,15 @@ Darsh Shah’s tutorial takes a research question from the terminal, searches th
 
 ## 🧩 Extensions added in Project 8
 
+<a id="extension-roadmap"></a>
+
+![Seven implemented extensions covering scoped search, deduplication, citation checks, retries, evidence replay, merged findings, and claim-support evaluation](docs/assets/extension-roadmap.svg)
+
+Project #8 builds on one tutorial baseline with **two adaptations and seven extensions**. The adaptations change the tutorial’s retrieval path. The extensions add search controls, citation checks, recovery, and evidence evaluation.
+
 ### Implemented extensions
+
+The numbered checklist covers the three follow-up extensions. The contribution table lists all seven.
 
 - [x] **1. Save and replay evidence.** [Offline round-trip tests](tests/test_regressions.py)
 - [x] **2. Merge repeated findings.** [Offline retention regression](docs/live-regression.md#offline-merge-regression)
@@ -36,12 +60,6 @@ Darsh Shah’s tutorial takes a research question from the terminal, searches th
 | 🧩 Extension | 🧪 Claim-support evaluation set | Reports automated quote checks alongside curated factual-support judgments. | [Six offline cases](docs/bri-evaluation.md#claim-support-evaluation) |
 
 The live retention regression shows what the added retrieval and citation controls changed for one GitHub.com policy question. The BRI evaluation guide explains how to assess source applicability, quote matching, and claim support as separate checks. [Live regression](docs/live-regression.md) · [BRI evaluation guide](docs/bri-evaluation.md)
-
-<a id="explore-the-project"></a>
-
-## 🧭 Explore the project
-
-[🧩 Architecture](#architecture) · [🚀 Setup](#setup) · [🧪 Results & verification](#verification) · [🗂️ Evidence & guides](docs/bri-evaluation.md) · [📚 Tutorial credit](#tutorial-credit) · [🎨 Visual standard](https://github.com/anne500/multi-agent-study-guide/blob/main/VISUAL_STYLE.md#readme-presentation-standard)
 
 <a id="architecture"></a>
 
@@ -146,6 +164,14 @@ After installing the Python dependencies, run the tests without credentials, net
 | GitHub.com artifact retention ranges | Three URLs pointed to one REST article. The agent reported insufficient evidence. | The GitHub Docs API supplied Enterprise Cloud excerpts with the applicable ranges. The quotes passed validation. |
 
 See the [recorded live regression](docs/live-regression.md) and [BRI evaluation guide](docs/bri-evaluation.md).
+
+<a id="claim-support-results"></a>
+
+### 📊 Claim-support results
+
+![Among four fixtures that passed quote matching, one claim had full support, one had partial support, and two were unsupported.](docs/assets/claim-support-results.svg)
+
+The chart covers the four matching-quote cases from the six controlled fixtures. The support labels come from curated review judgments. [Windows verification](docs/bri-evaluation.md#windows-verification) · [Source cases](evaluation/claim_support_cases.json) · [Plotting script](scripts/plot_verification.py)
 
 <a id="tutorial-credit"></a>
 
