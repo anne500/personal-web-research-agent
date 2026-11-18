@@ -23,6 +23,7 @@ GITHUB_DOCS_BASE = f"https://{GITHUB_DOCS_DOMAIN}"
 GITHUB_COM_DOC_VERSIONS = {"free-pro-team@latest", "enterprise-cloud@latest"}
 SEARCH_EXCERPT_CHARACTERS = 1_200
 MAX_CLAIMS = 4
+EVIDENCE_VERSION = 1
 
 
 class CitationError(ValueError):
@@ -260,7 +261,15 @@ def validate_claims(response_text, excerpts):
     return validated
 
 
-def generate_search_digest(question, evidence, excerpts):
+def check_citations(response, excerpts):
+    try:
+        claims = validate_claims(response, excerpts)
+    except CitationError as error:
+        return {"status": "rejected", "reason": str(error)}, []
+    return {"status": "passed" if claims else "insufficient_evidence"}, claims
+
+
+def generate_search_digest(question, evidence, excerpts, *, citation_attempts=None):
     response_format = {
         "type": "object",
         "properties": {
@@ -293,9 +302,11 @@ def generate_search_digest(question, evidence, excerpts):
     )
     for attempt in range(2):
         response = query_ollama(question, evidence, instructions, response_format=response_format)
-        try:
-            claims = validate_claims(response, excerpts)
-        except CitationError as error:
+        outcome, claims = check_citations(response, excerpts)
+        if citation_attempts is not None:
+            citation_attempts.append({"response": response, **outcome})
+        if outcome["status"] == "rejected":
+            error = outcome["reason"]
             if attempt == 0:
                 print(f"Citation check failed: {error} Retrying with the same evidence...", flush=True)
                 instructions += f" Correct this validation error: {error}"
@@ -317,21 +328,61 @@ def prepare_evidence(args):
         print(f"Searching with Tavily{scope}...", flush=True)
         sources = search_sources(args.question, args.domain, github_com=args.github_com)
         evidence = []
-        excerpts = {}
+        labeled_sources = {}
         source_links = []
         for index, source in enumerate(sources, start=1):
             label = f"[S{index}]"
-            excerpts[label] = source.excerpt
+            labeled_sources[label] = source
             evidence.append(f"{label} ({source.kind})\n{source.excerpt}")
             source_links.append(f"- {label} <{source.url}> ({source.kind})")
             print(f"{label} {source.url} ({source.kind})", flush=True)
-        return "\n\n".join(evidence), "\n".join(source_links) + "\n", excerpts
+        return "\n\n".join(evidence), "\n".join(source_links) + "\n", labeled_sources
 
     print(f"Fetching: {args.url}", flush=True)
     source_url, source_text = fetch_source(args.url)
     excerpt = select_excerpt(args.question, source_text)
     source_note = "\nThe digest uses a selected excerpt from this page.\n" if excerpt != source_text else ""
-    return excerpt, f"<{source_url}>\n{source_note}", {}
+    return excerpt, f"<{source_url}>\n{source_note}", {
+        "[S1]": SearchSource(source_url, excerpt, "page excerpt")
+    }
+
+
+def replay_evidence(path):
+    bundle = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(bundle, dict) or bundle.get("schema_version") != EVIDENCE_VERSION:
+        raise ValueError("Unsupported evidence bundle version.")
+
+    sources = bundle.get("sources")
+    attempts = bundle.get("citation_attempts")
+    mode = bundle.get("mode")
+    if not isinstance(sources, dict) or not sources or not isinstance(attempts, list):
+        raise ValueError("The evidence bundle needs sources and citation attempts.")
+    excerpts = {}
+    for label, source in sources.items():
+        if not isinstance(source, dict) or not isinstance(source.get("excerpt"), str):
+            raise ValueError(f"Source {label} needs an excerpt.")
+        excerpts[label] = source["excerpt"]
+
+    if mode == "url" and not attempts:
+        print("URL evidence loaded. Citation replay is available for search runs.")
+        return
+    if mode != "search" or not 1 <= len(attempts) <= 2:
+        raise ValueError("A search evidence bundle needs one or two citation attempts.")
+
+    for index, attempt in enumerate(attempts, start=1):
+        if not isinstance(attempt, dict) or not isinstance(attempt.get("response"), str):
+            raise ValueError(f"Citation attempt {index} needs a model response.")
+        outcome, _ = check_citations(attempt["response"], excerpts)
+        recorded = {key: value for key, value in attempt.items() if key != "response"}
+        if outcome != recorded:
+            raise ValueError(f"Citation attempt {index} differs from the recorded outcome.")
+        if index < len(attempts) and outcome["status"] != "rejected":
+            raise ValueError(f"Citation attempt {index} did not require a retry.")
+        if outcome["status"] == "rejected" and index == 1 and len(attempts) == 1:
+            raise ValueError("The recorded retry is missing.")
+        reason = f" ({outcome['reason']})" if "reason" in outcome else ""
+        print(f"Attempt {index}: {outcome['status']}{reason}")
+    print(f"Replayed {len(attempts)} citation attempt(s) offline. All outcomes matched.")
 
 
 def main():
@@ -339,14 +390,23 @@ def main():
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--url", help="HTTP or HTTPS article URL")
     mode.add_argument("--search", action="store_true", help="Find sources with Tavily")
+    mode.add_argument("--replay", type=Path, metavar="EVIDENCE_JSON", help="Replay saved citation checks offline")
     parser.add_argument("--domain", action="append", default=[], help="Limit search to this domain (repeatable)")
     parser.add_argument(
         "--github-com",
         action="store_true",
         help="Restrict evidence to GitHub.com and Enterprise Cloud, with a GitHub Docs fallback",
     )
-    parser.add_argument("question", help="Research question in quotes")
+    parser.add_argument("question", nargs="?", help="Research question in quotes")
     args = parser.parse_args()
+    if args.replay is not None:
+        if args.question is not None or args.domain or args.github_com:
+            parser.error("--replay takes only the evidence JSON path.")
+        try:
+            replay_evidence(args.replay)
+        except (OSError, ValueError) as error:
+            parser.exit(1, f"Could not replay evidence: {error}\n")
+        return
     if args.url is not None and not is_web_url(args.url):
         parser.error("Provide an HTTP or HTTPS article URL.")
     if args.domain and not args.search:
@@ -355,18 +415,20 @@ def main():
         parser.error("--github-com requires --search.")
     if args.github_com and any(domain.lower() != GITHUB_DOCS_DOMAIN for domain in args.domain):
         parser.error("--github-com only supports docs.github.com; omit --domain or use docs.github.com.")
-    if not args.question.strip():
+    if not args.question or not args.question.strip():
         parser.error("Provide a nonempty research question.")
 
     try:
-        evidence, source_links, excerpts = prepare_evidence(args)
+        evidence, source_links, sources = prepare_evidence(args)
     except (requests.RequestException, ValueError) as error:
         parser.exit(1, f"Could not retrieve evidence: {error}\n")
 
     print(f"Summarizing {len(evidence):,} source characters with {MODEL}...", flush=True)
+    citation_attempts = []
     try:
         if args.search:
-            digest = generate_search_digest(args.question, evidence, excerpts)
+            excerpts = {label: source.excerpt for label, source in sources.items()}
+            digest = generate_search_digest(args.question, evidence, excerpts, citation_attempts=citation_attempts)
         else:
             digest = generate_digest(args.question, evidence)
     except requests.Timeout:
@@ -376,20 +438,35 @@ def main():
         parser.exit(1, f"Could not generate the digest: {error}\n")
 
     output = Path(f"digest-{datetime.now():%Y%m%d-%H%M%S-%f}.md")
+    evidence_path = output.with_suffix(".evidence.json")
+    bundle = {
+        "schema_version": EVIDENCE_VERSION,
+        "mode": "search" if args.search else "url",
+        "question": args.question,
+        "model": MODEL,
+        "sources": {
+            label: {"url": source.url, "kind": source.kind, "excerpt": source.excerpt}
+            for label, source in sources.items()
+        },
+        "citation_attempts": citation_attempts,
+    }
     source_heading = "Sources" if args.search else "Source"
     source_scope = ""
     if args.github_com:
         source_scope = "**Source scope:** GitHub.com and GitHub Enterprise Cloud documentation\n\n"
     try:
+        evidence_path.write_text(json.dumps(bundle, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         output.write_text(
             f"# Research digest\n\n**Question:** {args.question}\n\n"
-            f"{source_scope}{digest}\n\n## {source_heading}\n\n{source_links}",
+            f"{source_scope}{digest}\n\n## {source_heading}\n\n{source_links}\n"
+            f"[Saved evidence]({evidence_path.name})\n",
             encoding="utf-8",
         )
     except OSError as error:
-        parser.exit(1, f"Could not save the digest: {error}\n")
+        parser.exit(1, f"Could not save the digest or evidence: {error}\n")
     print(digest)
     print(f"\nSaved: {output.resolve()}")
+    print(f"Evidence: {evidence_path.resolve()}")
 
 
 if __name__ == "__main__":

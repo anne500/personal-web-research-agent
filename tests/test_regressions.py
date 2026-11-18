@@ -2,7 +2,10 @@ import contextlib
 import io
 import json
 import os
+import sys
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import research_agent as agent
@@ -128,3 +131,84 @@ class CitationRegressionTests(unittest.TestCase):
 
         model.assert_called_once()
         self.assertIn("did not provide enough evidence", digest)
+
+
+class EvidenceReplayTests(unittest.TestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        original_directory = Path.cwd()
+        os.chdir(directory.name)
+        self.addCleanup(os.chdir, original_directory)
+
+    def run_cli(self, *arguments):
+        with (
+            patch.object(sys, "argv", ["research_agent.py", *arguments]),
+            contextlib.redirect_stdout(io.StringIO()) as output,
+            contextlib.redirect_stderr(io.StringIO()) as errors,
+        ):
+            try:
+                agent.main()
+            except SystemExit as error:
+                return error.code, errors.getvalue()
+        return 0, output.getvalue()
+
+    def test_saved_search_replays_success_rejection_and_insufficient_evidence(self):
+        sources = [
+            agent.SearchSource(f"{DOCS}/en/actions", "Configurable.", "search snippet"),
+            agent.SearchSource(f"{DOCS}{CLOUD}", f"Retention details\n\n{PUBLIC}", "page excerpt"),
+        ]
+        for final_response, final_status in (
+            (answer("[S2]"), "passed"),
+            (answer("[S1]"), "rejected"),
+            ('{"claims": []}', "insufficient_evidence"),
+        ):
+            with self.subTest(final_status=final_status):
+                with (
+                    patch.object(agent, "search_sources", return_value=sources),
+                    patch.object(agent, "query_ollama", side_effect=[answer("[S1]"), final_response]),
+                ):
+                    status, output = self.run_cli("--search", QUESTION)
+                self.assertEqual(status, 0, output)
+                path = Path(next(line.removeprefix("Evidence: ") for line in output.splitlines()
+                                 if line.startswith("Evidence: ")))
+                saved = json.loads(path.read_text(encoding="utf-8"))
+                self.assertEqual(saved["sources"]["[S2]"], vars(sources[1]))
+                self.assertEqual(saved["citation_attempts"][0]["response"], answer("[S1]"))
+                self.assertEqual(saved["citation_attempts"][1]["response"], final_response)
+                digest = Path(path.name.removesuffix(".evidence.json") + ".md")
+                self.assertIn(f"[Saved evidence]({path.name})", digest.read_text(encoding="utf-8"))
+
+                with (
+                    patch.object(agent.requests, "post", side_effect=AssertionError("Unexpected HTTP POST")),
+                    patch.object(agent.requests, "get", side_effect=AssertionError("Unexpected HTTP GET")),
+                ):
+                    status, output = self.run_cli("--replay", str(path))
+                    self.assertEqual(status, 0, output)
+                    self.assertIn("Attempt 1: rejected", output)
+                    self.assertIn(f"Attempt 2: {final_status}", output)
+                    self.assertIn("All outcomes matched", output)
+
+                    saved["sources"]["[S1]"]["excerpt"] = PUBLIC
+                    path.write_text(json.dumps(saved), encoding="utf-8")
+                    status, error = self.run_cli("--replay", str(path))
+                    self.assertEqual(status, 1)
+                    self.assertIn("differs from the recorded outcome", error)
+
+    def test_direct_url_saves_exact_excerpt_for_review(self):
+        url = f"{DOCS}/en/actions"
+        excerpt = f"Retention details\n\n{PUBLIC}"
+        with (
+            patch.object(agent, "fetch_source", return_value=(url, excerpt)),
+            patch.object(agent, "generate_digest", return_value=PUBLIC),
+        ):
+            status, output = self.run_cli("--url", url, QUESTION)
+        self.assertEqual(status, 0, output)
+        path, = Path.cwd().glob("digest-*.evidence.json")
+        saved = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(saved["sources"]["[S1]"]["excerpt"], excerpt)
+        self.assertEqual(saved["sources"]["[S1]"]["url"], url)
+        self.assertEqual(saved["citation_attempts"], [])
+        status, output = self.run_cli("--replay", str(path))
+        self.assertEqual(status, 0, output)
+        self.assertIn("Citation replay is available for search runs", output)

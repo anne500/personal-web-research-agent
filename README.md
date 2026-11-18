@@ -52,7 +52,7 @@ flowchart TD
 
 Check off an extension when its completion criteria pass, then link the test or verification result here.
 
-- [ ] **1. Save and replay evidence.** Save source URLs and labels, exact excerpts, model claims, and citation-check outcomes alongside each digest. **Complete when** a reviewer can replay the citation checks offline from a saved run and reproduce its pass or fail outcomes without calling Tavily, GitHub Docs, or Ollama.
+- [x] **1. Save and replay evidence.** Digests include a companion JSON file with source URLs, labels, exact excerpts, and the model responses and citation outcome for each search attempt. The [offline round-trip tests](tests/test_regressions.py) reproduce accepted citations, rejected citations, and insufficient evidence with HTTP calls disabled.
 - [ ] **2. Merge repeated findings.** Show a repeated finding once and preserve every supporting source and quote. **Complete when** the [retention regression](docs/live-regression.md) produces one public finding and one private/internal finding, each retaining its verified citations, and a test confirms that distinct scopes stay separate.
 - [ ] **3. Add a claim-support evaluation set.** Include examples of fully supported claims, partly supported claims, wrong repository scopes, missing evidence, and quotations that appear in the excerpt but fail to establish the claim. **Complete when** an offline evaluation records quote matching and claim support separately against documented expected results.
 
@@ -94,6 +94,16 @@ finally {
 ```
 
 Use `--search --domain example.org` for a different domain. The agent writes `digest-*.md` in the current directory.
+
+### 🔁 Replay citation checks from a saved search
+
+Each new digest links to its companion `digest-*.evidence.json` file. After a search run, copy the path printed on its `Evidence:` line and use it in this command:
+
+```powershell
+.\.venv\Scripts\python.exe .\research_agent.py --replay "path\to\digest.evidence.json"
+```
+
+Replay reads the saved excerpts and model replies, reruns citation validation for each attempt, and exits successfully when the original outcomes match. A recorded rejection can replay successfully. Replay runs offline and checks quote matching. Factual support still requires reviewing the claim against its evidence. Direct URL runs save the selected excerpt for review, while search runs also record structured citation attempts.
 
 ## 🧪 Verify offline
 
