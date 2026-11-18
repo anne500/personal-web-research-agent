@@ -50,6 +50,6 @@ Anne ran both offline commands from a fresh GitHub checkout in Windows PowerShel
 | Check | Observed result |
 | --- | --- |
 | 🧪 `python -m unittest discover -s tests -v` | 11 tests passed in 0.122 seconds. The suite includes the duplicate-retention regression and checks that different scopes, values, units, and qualifiers stay separate. |
-| 🧾 `python evaluate_claim_support.py` | All 6 quote-check outcomes matched expectations. Of the 4 cases whose quotes matched, 1 supported the full claim, 1 supported part of the claim, and 2 provided insufficient support for the claim. |
+| 🧾 `python evaluate_claim_support.py` | All 6 quote-check outcomes matched expectations. Of the 4 cases whose quotes matched, 1 supported the full claim, 1 supported part of the claim, and 2 failed to support the claim. |
 
 The support statuses are curated for these fixtures. The runtime records one Windows test run. [Implementation commit](https://github.com/anne500/personal-web-research-agent/commit/1c4d99d8bd3f6c6362ca5c9a78b3db39e1fb73ec)
