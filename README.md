@@ -2,27 +2,36 @@
 
 A Python research agent that retrieves web evidence, runs Qwen locally through Ollama, and writes a timestamped Markdown digest. It demonstrates how to recover when search returns three URLs for a single article and how to check the quotes behind an answer.
 
-## 📚 Tutorial baseline
+<a id="-tutorial-baseline"></a>
 
-Darsh Shah’s tutorial takes a research question from the terminal, searches the web through Ollama, and retrieves the top five pages. It uses Requests and BeautifulSoup to extract page text, then sends the text to local Qwen through Ollama and saves a timestamped Markdown digest. This project retains that question-to-digest workflow. [freeCodeCamp tutorial](https://www.freecodecamp.org/news/build-a-personal-ai-web-research-agent-with-ollama-and-qwen/)
+<a id="base-tutorial"></a>
 
-## 🧩 Project extensions and contributions
+## 🟦 Base tutorial
 
-### Project adaptations
+Darsh Shah’s tutorial takes a research question from the terminal, searches the web through Ollama, and retrieves the top five pages. It uses Requests and BeautifulSoup to extract page text, then sends the text to local Qwen through Ollama and saves a timestamped Markdown digest. This project retains that question-to-digest workflow. [Darsh Shah’s freeCodeCamp tutorial: How to Build a Personal Web Research AI Agent with Ollama and Qwen](https://www.freecodecamp.org/news/build-a-personal-ai-web-research-agent-with-ollama-and-qwen/)
 
-- 🔗 **Direct URL research.** Added a `--url` mode for analyzing a specific source with local Qwen. This mode requires no Tavily key. The dependency-caching question and the offline URL excerpt test exercised this path.
-- 🌐 **Tavily search.** Replaced the tutorial’s Ollama web search with Tavily. The agent selects up to three page excerpts or search snippets and can restrict results by domain. The live retention regression exercised this path.
+<a id="-project-extensions-and-contributions"></a>
+
+## 🧩 Extensions added in Project 8
 
 ### Implemented extensions
 
-- [x] **1. Save and replay evidence.** Digests include a companion JSON file with source URLs, labels, exact excerpts, and the model responses and citation outcome for each search attempt. The [offline round-trip tests](tests/test_regressions.py) reproduce accepted citations, rejected citations, and insufficient evidence with HTTP calls disabled.
+- [x] **1. Save and replay evidence.** [Offline round-trip tests](tests/test_regressions.py)
 
-| Contribution | Behavior | Verification |
-| --- | --- | --- |
-| 🏷️ Product and version scope | `--github-com` keeps GitHub.com and Enterprise Cloud documentation and excludes versioned Enterprise Server pages. | Live scoped search and offline URL tests |
-| 🔁 Article deduplication and fallback | In `--github-com` mode, groups locale and fragment variants of an article. GitHub Docs search can supplement the evidence when fewer than three distinct sources remain. | Live fallback and offline retrieval regression |
-| 🧾 Citation validation | In search mode, checks that each quoted passage appears in its cited excerpt, allowing whitespace differences. | Live digest and offline wrong-source, unknown-label, and invented-quote cases |
-| 🛑 Retry and abstention | Retries invalid citations once with the same evidence, then withholds claims if validation still fails. Reports insufficient evidence when the model produces no claims. | Offline retry and abstention cases, plus a live insufficient-evidence run |
+### Baseline and contribution table
+
+| Origin | Item | Scope or contribution | Verification |
+| --- | --- | --- | --- |
+| 🟦 Tutorial baseline | [Base tutorial](#base-tutorial) | Ollama web search, webpage text extraction, local Qwen summarization, and a timestamped Markdown digest. | See the [tutorial baseline](#base-tutorial). |
+| 🛠️ Adaptation | 🔗 Direct URL research (adaptation) | Added `--url` to analyze a supplied page with local Qwen without a Tavily key. | Live dependency-caching question and offline URL excerpt test |
+| 🛠️ Adaptation | 🌐 Tavily web search (adaptation) | Replaced Ollama web search with Tavily, with optional domain filtering and up to three excerpts or snippets. | Live retention regression |
+| 🧩 Extension | 🏷️ Product and version scope | `--github-com` keeps GitHub.com and Enterprise Cloud documentation and excludes versioned Enterprise Server pages. | Live scoped search and offline URL tests |
+| 🧩 Extension | 🔁 Article deduplication and fallback | In `--github-com` mode, groups locale and fragment variants of an article. GitHub Docs search can supplement the evidence when fewer than three distinct sources remain. | Live fallback and offline retrieval regression |
+| 🧩 Extension | 🧾 Citation validation | In search mode, checks that each quoted passage appears in its cited excerpt, allowing whitespace differences. | Live digest and offline wrong-source, unknown-label, and invented-quote cases |
+| 🧩 Extension | 🛑 Retry and abstention | Retries invalid citations once with the same evidence, then withholds claims if validation still fails. Reports insufficient evidence when the model produces no claims. | Offline retry and abstention cases, plus a live insufficient-evidence run |
+| 🧩 Extension | 💾 Save and replay evidence | Saves source URLs, labels, exact excerpts, model responses, and citation outcomes. Replays each search attempt against the stored evidence. | [Offline tests](tests/test_regressions.py) cover accepted and rejected citations and insufficient evidence with HTTP calls disabled. |
+| 🟠 Planned extension | **2. Merge repeated findings** | Merge duplicate claims while preserving all supporting quotes and source labels. | [Completion criteria](#planned-extensions) |
+| 🟠 Planned extension | **3. Claim-support evaluation set** | Score factual support independently of quote matching. | [Completion criteria](#planned-extensions) |
 
 The live retention regression shows what the added retrieval and citation controls changed for one GitHub.com policy question. The BRI evaluation guide explains how to assess source applicability, quote matching, and claim support as separate checks. [Live regression](docs/live-regression.md) · [BRI evaluation guide](docs/bri-evaluation.md)
 
@@ -33,7 +42,15 @@ Move each verified extension to Implemented extensions and link its test or veri
 - [ ] **2. Merge repeated findings.** Show a repeated finding once and preserve every supporting source and quote. **Complete when** the [retention regression](docs/live-regression.md) produces one public finding and one private/internal finding, each retaining its verified citations, and a test confirms that distinct scopes stay separate.
 - [ ] **3. Add a claim-support evaluation set.** Include examples of fully supported claims, partly supported claims, wrong repository scopes, missing evidence, and quotations that appear in the excerpt but fail to establish the claim. **Complete when** an offline evaluation records quote matching and claim support separately against documented expected results.
 
-## 🎨 Architecture
+<a id="explore-the-project"></a>
+
+## 🧭 Explore the project
+
+[🧩 Architecture](#architecture) · [🚀 Setup](#setup) · [🧪 Results & verification](#verification) · [🗂️ Evidence & guides](docs/bri-evaluation.md) · [📚 Tutorial credit](#tutorial-credit) · [🎨 Visual standard](https://github.com/anne500/multi-agent-study-guide/blob/main/VISUAL_STYLE.md#readme-presentation-standard)
+
+<a id="architecture"></a>
+
+## 🧩 Architecture
 
 ```mermaid
 flowchart TD
@@ -65,6 +82,8 @@ flowchart TD
     class D output;
     class A failure;
 ```
+
+<a id="setup"></a>
 
 ## 🚀 Run on Windows
 
@@ -115,6 +134,8 @@ Each new digest links to its companion `digest-*.evidence.json` file. After a se
 
 Replay reads the saved excerpts and model replies, reruns citation validation for each attempt, and exits successfully when the original outcomes match. A recorded rejection can replay successfully. Replay runs offline and checks quote matching. Factual support still requires reviewing the claim against its evidence. Direct URL runs save the selected excerpt for review, while search runs also record structured citation attempts.
 
+<a id="verification"></a>
+
 ## 🧪 Verify offline
 
 After installing the Python dependencies, run the tests without credentials, network calls, or a local model:
@@ -128,6 +149,8 @@ After installing the Python dependencies, run the tests without credentials, net
 | GitHub.com artifact retention ranges | Three URLs pointed to one REST article. The agent reported insufficient evidence. | The GitHub Docs API supplied Enterprise Cloud excerpts with the applicable ranges. The quotes passed validation. |
 
 See the [recorded live regression](docs/live-regression.md) and [BRI evaluation guide](docs/bri-evaluation.md).
+
+<a id="tutorial-credit"></a>
 
 ## 🙌 Acknowledgment
 
