@@ -39,6 +39,8 @@ flowchart TD
 
 ### Implemented extensions
 
+- [x] **1. Save and replay evidence.** Digests include a companion JSON file with source URLs, labels, exact excerpts, and the model responses and citation outcome for each search attempt. The [offline round-trip tests](tests/test_regressions.py) reproduce accepted citations, rejected citations, and insufficient evidence with HTTP calls disabled.
+
 | Extension | Behavior | Verification |
 | --- | --- | --- |
 | 🔗 Direct URL research | Fetches a user-selected HTML page. Uses local Ollama and requires no Tavily key. | Live answerable and missing-evidence runs |
@@ -50,9 +52,8 @@ flowchart TD
 
 ### Planned extensions
 
-Check off an extension when its completion criteria pass, then link the test or verification result here.
+Move each verified extension to Implemented extensions and link its test or verification result.
 
-- [x] **1. Save and replay evidence.** Digests include a companion JSON file with source URLs, labels, exact excerpts, and the model responses and citation outcome for each search attempt. The [offline round-trip tests](tests/test_regressions.py) reproduce accepted citations, rejected citations, and insufficient evidence with HTTP calls disabled.
 - [ ] **2. Merge repeated findings.** Show a repeated finding once and preserve every supporting source and quote. **Complete when** the [retention regression](docs/live-regression.md) produces one public finding and one private/internal finding, each retaining its verified citations, and a test confirms that distinct scopes stay separate.
 - [ ] **3. Add a claim-support evaluation set.** Include examples of fully supported claims, partly supported claims, wrong repository scopes, missing evidence, and quotations that appear in the excerpt but fail to establish the claim. **Complete when** an offline evaluation records quote matching and claim support separately against documented expected results.
 
